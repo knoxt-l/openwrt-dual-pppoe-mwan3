@@ -1,39 +1,74 @@
-# OpenWrt Dual PPPoE Load Balancing & Failover
+<div align="center">
+
+# 🌐 OpenWrt Dual PPPoE Load Balancing & Failover
+
+**Two PPPoE sessions. One ONU. One Ethernet uplink. Balanced and fault-tolerant.**
 
 A practical guide for running **two PPPoE sessions over a single ONU / Ethernet uplink** on OpenWrt using `mwan3`.
 
-- 50/50 connection-based load balancing
-- Automatic WAN failover
-- Independent PPPoE sessions over the same physical Ethernet interface
-- Proper IPv4 NAT for both WANs
-- Policy-based routing
-- A dedicated proxy pinned to a specific WAN
-- Verification and troubleshooting procedures
+<br>
+
+[![OpenWrt](https://img.shields.io/badge/OpenWrt-25.12.x-00B5E2?style=for-the-badge&logo=openwrt&logoColor=white)](https://openwrt.org/)
+[![mwan3](https://img.shields.io/badge/mwan3-load%20balancing-2E7D32?style=for-the-badge)](https://github.com/openwrt/packages/tree/master/net/mwan3)
+[![PPPoE](https://img.shields.io/badge/PPPoE-dual%20session-F57C00?style=for-the-badge)](#-1-network-topology)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
+[![Last commit](https://img.shields.io/github/last-commit/itachi-re/openwrt-dual-pppoe-mwan3?style=flat-square&logo=github)](https://github.com/itachi-re/openwrt-dual-pppoe-mwan3/commits)
+[![Stars](https://img.shields.io/github/stars/itachi-re/openwrt-dual-pppoe-mwan3?style=flat-square&logo=github)](https://github.com/itachi-re/openwrt-dual-pppoe-mwan3/stargazers)
+[![Forks](https://img.shields.io/github/forks/itachi-re/openwrt-dual-pppoe-mwan3?style=flat-square&logo=github)](https://github.com/itachi-re/openwrt-dual-pppoe-mwan3/network/members)
+[![Issues](https://img.shields.io/github/issues/itachi-re/openwrt-dual-pppoe-mwan3?style=flat-square)](https://github.com/itachi-re/openwrt-dual-pppoe-mwan3/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/itachi-re/openwrt-dual-pppoe-mwan3/pulls)
+![Shell](https://img.shields.io/badge/scripts-POSIX%20sh-4EAA25?style=flat-square&logo=gnubash&logoColor=white)
+![IPv4](https://img.shields.io/badge/IPv4-load%20balanced-blue?style=flat-square)
+
+<br>
+
+[Quick start](#-4-quick-start) •
+[Verification](#-5-verification) •
+[Failover](#-8-failover) •
+[Troubleshooting](#-10-troubleshooting)
+
+</div>
+
+---
+
+## ✨ Features
+
+| | Feature | Details |
+|---|---|---|
+| ⚖️ | **50/50 load balancing** | Connection-based distribution across both PPPoE sessions |
+| 🔁 | **Automatic failover** | WAN1 down → WAN2 carries 100%, restored automatically |
+| 🔌 | **One physical link** | Independent PPPoE sessions over the same `eth1` |
+| 🛡️ | **Proper IPv4 NAT** | Masquerading for both WANs via the firewall WAN zone |
+| 🧭 | **Policy-based routing** | Per-destination rules with `mwan3` policies |
+| 📌 | **WAN-pinned proxy** | Keep a specific proxy/server on a fixed public route |
+| 🧪 | **Verification scripts** | One-shot health check and live per-WAN throughput monitor |
 
 > [!IMPORTANT]
 > This configuration performs **connection-based** load balancing. It does **not** combine two WANs into a single TCP connection. Applications must open multiple connections to benefit from both links at the same time.
 
-Tested on **OpenWrt 25.12.x** with `mwan3`.
+> [!TIP]
+> Tested on **OpenWrt 25.12.x** with `mwan3`.
 
 ---
 
-## Table of contents
+## 📑 Table of contents
 
-1. [Network topology](#1-network-topology)
-2. [Repository layout](#2-repository-layout)
-3. [Requirements](#3-requirements)
-4. [Quick start](#4-quick-start)
-5. [Verification](#5-verification)
-6. [Bandwidth expectations](#6-bandwidth-expectations)
-7. [Monitoring WAN traffic](#7-monitoring-wan-traffic)
-8. [Failover](#8-failover)
-9. [Pinning a proxy to one WAN](#9-pinning-a-proxy-to-one-wan)
-10. [Troubleshooting](#10-troubleshooting)
-11. [Result and limitations](#11-result-and-limitations)
+1. [Network topology](#-1-network-topology)
+2. [Repository layout](#-2-repository-layout)
+3. [Requirements](#-3-requirements)
+4. [Quick start](#-4-quick-start)
+5. [Verification](#-5-verification)
+6. [Bandwidth expectations](#-6-bandwidth-expectations)
+7. [Monitoring WAN traffic](#-7-monitoring-wan-traffic)
+8. [Failover](#-8-failover)
+9. [Pinning a proxy to one WAN](#-9-pinning-a-proxy-to-one-wan)
+10. [Troubleshooting](#-10-troubleshooting)
+11. [Result and limitations](#-11-result-and-limitations)
 
 ---
 
-## 1. Network topology
+## 🗺️ 1. Network topology
 
 ```text
                          ┌──────────────────────┐
@@ -69,7 +104,7 @@ eth1
 
 This is valid because PPPoE creates separate logical sessions over the same Ethernet link.
 
-### Traffic flow
+### 🔀 Traffic flow
 
 ```mermaid
 flowchart LR
@@ -84,7 +119,7 @@ flowchart LR
 
 ---
 
-## 2. Repository layout
+## 📁 2. Repository layout
 
 ```text
 .
@@ -103,14 +138,14 @@ flowchart LR
 
 ---
 
-## 3. Requirements
+## 📋 3. Requirements
 
-- OpenWrt 25.12.x
-- Two working PPPoE accounts
-- Both accounts available through the same ONU/uplink
-- `mwan3`
-- `luci-app-mwan3` (optional)
-- IPv4 routing
+- [x] OpenWrt 25.12.x
+- [x] Two working PPPoE accounts
+- [x] Both accounts available through the same ONU/uplink
+- [x] `mwan3`
+- [ ] `luci-app-mwan3` (optional)
+- [x] IPv4 routing
 
 Install:
 
@@ -121,7 +156,7 @@ apk add mwan3 luci-app-mwan3
 
 ---
 
-## 4. Quick start
+## 🚀 4. Quick start
 
 ### Step 1: Configure the two PPPoE interfaces
 
@@ -203,6 +238,9 @@ Equal metrics and equal weights give approximately **WAN1 = 50% / WAN2 = 50%**.
 
 Full example: [`config/mwan3.example`](config/mwan3.example). The essentials:
 
+<details>
+<summary><b>📄 Show the mwan3 essentials (/etc/config/mwan3)</b></summary>
+
 ```uci
 config interface 'wan'
         option enabled '1'
@@ -244,6 +282,8 @@ config rule 'default_rule_v4'
         option use_policy 'balanced'
         option family 'ipv4'
 ```
+
+</details>
 
 ### Step 4: Add `wan2` to the firewall WAN zone (critical)
 
@@ -318,7 +358,7 @@ wan_only:
 
 ---
 
-## 5. Verification
+## ✅ 5. Verification
 
 You can run everything below in one go with [`scripts/verify.sh`](scripts/verify.sh).
 
@@ -362,6 +402,9 @@ for i in $(seq 1 20); do
 done
 ```
 
+<details>
+<summary><b>👀 Example output</b></summary>
+
 The results should vary across the ISP's public/NAT addresses, for example:
 
 ```text
@@ -378,11 +421,14 @@ The results should vary across the ISP's public/NAT addresses, for example:
 
 This shows independent connections being distributed across the multi-WAN setup.
 
+</details>
+
 ---
 
-## 6. Bandwidth expectations
+## 📊 6. Bandwidth expectations
 
-This setup is **not bonding**. mwan3 does not turn 350 Mbps + 350 Mbps into 700 Mbps for one TCP connection.
+> [!CAUTION]
+> This setup is **not bonding**. mwan3 does not turn 350 Mbps + 350 Mbps into 700 Mbps for one TCP connection.
 
 ```text
 Connection 1 ──→ WAN1
@@ -393,20 +439,10 @@ Connection 5 ──→ WAN1
 ...
 ```
 
-**Single connection:**
-
-```text
-One TCP flow ──→ one WAN ──→ ~350 Mbps maximum
-```
-
-**Multiple connections:**
-
-```text
-Flow 1 ──→ WAN1 ──→ ~350 Mbps
-Flow 2 ──→ WAN2 ──→ ~350 Mbps
-                    ─────────
-                    ~700 Mbps aggregate
-```
+| Scenario | Path | Throughput |
+|---|---|---|
+| **Single connection** | One TCP flow → one WAN | ~350 Mbps max |
+| **Multiple connections** | Flow 1 → WAN1, Flow 2 → WAN2 | ~700 Mbps aggregate |
 
 Actual aggregate speed depends on:
 
@@ -420,7 +456,7 @@ Actual aggregate speed depends on:
 
 ---
 
-## 7. Monitoring WAN traffic
+## 📈 7. Monitoring WAN traffic
 
 OpenWrt exposes byte counters per PPPoE interface. This is more reliable than an application's displayed download speed.
 
@@ -429,7 +465,8 @@ sh scripts/monitor-wan-traffic.sh          # live Mbit/s per WAN
 sh scripts/monitor-wan-traffic.sh -r       # raw byte counters
 ```
 
-Or the one-liner version:
+<details>
+<summary><b>🧰 One-liner version</b></summary>
 
 ```sh
 while true; do
@@ -443,9 +480,11 @@ while true; do
 done
 ```
 
+</details>
+
 ---
 
-## 8. Failover
+## 🔁 8. Failover
 
 The same configuration provides automatic failover:
 
@@ -494,7 +533,7 @@ balanced:
     wan  (50%)
 ```
 
-### Failover behavior to expect
+### ⚠️ Failover behavior to expect
 
 mwan3 does connection-based routing, so an **existing TCP session breaks when its WAN disappears**:
 
@@ -512,7 +551,7 @@ This is expected. mwan3 is not a TCP connection migration or bonding system.
 
 ---
 
-## 9. Pinning a proxy to one WAN
+## 📌 9. Pinning a proxy to one WAN
 
 A proxy can have its own mwan3 policy:
 
@@ -543,7 +582,7 @@ This is useful when a specific proxy/server must always originate from the same 
 
 ---
 
-## 10. Troubleshooting
+## 🛠️ 10. Troubleshooting
 
 See [docs/troubleshooting.md](docs/troubleshooting.md) for the full checklist. Quick run:
 
@@ -551,11 +590,23 @@ See [docs/troubleshooting.md](docs/troubleshooting.md) for the full checklist. Q
 sh scripts/verify.sh
 ```
 
+<details>
+<summary><b>🩺 Quick symptom guide</b></summary>
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| WAN2 pings work, LAN traffic via WAN2 fails | `wan2` missing from the firewall WAN zone | [Step 4](#step-4-add-wan2-to-the-firewall-wan-zone-critical) |
+| Proxy gets balanced across both WANs | `proxy_server` rule is below `default_rule_v4` | [Section 9](#-9-pinning-a-proxy-to-one-wan) |
+| `ip route get ... mark 0x500` shows the wrong table | Interface order differs in your mwan3 config | Check `ip rule` and adjust |
+| `mwan3 reload` does nothing useful | Wrong command for this version | Use `mwan3 restart` |
+
+</details>
+
 ---
 
-## 11. Result and limitations
+## 🏁 11. Result and limitations
 
-**Working:**
+**✅ Working**
 
 - Two simultaneous PPPoE sessions over one ONU/uplink
 - ~350 Mbps per PPPoE account
@@ -566,7 +617,7 @@ sh scripts/verify.sh
 - WAN1-only proxy policy
 - Verified multi-WAN connectivity from LAN
 
-**Limitations:**
+**⚠️ Limitations**
 
 - A single TCP/UDP flow is still limited to one WAN.
 - Aggregate bandwidth depends on the application creating multiple concurrent flows.
@@ -575,6 +626,22 @@ sh scripts/verify.sh
 
 ---
 
-## License
+## 🤝 Contributing
 
-[MIT](LICENSE)
+Issues and pull requests are welcome, especially for:
+
+- Different ISPs and ONU models
+- Other OpenWrt releases
+- Additional verification and monitoring tooling
+
+## 📄 License
+
+Released under the [MIT License](LICENSE).
+
+---
+
+<div align="center">
+
+**If this guide saved you time, consider giving it a ⭐**
+
+</div>
